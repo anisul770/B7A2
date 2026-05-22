@@ -1,5 +1,6 @@
 import express, { type Application, type Request, type Response } from "express"
 import { authRoute } from "./module/auth/auth.route";
+import { userRoute } from "./module/user/user.route";
 
 const app:Application = express();
 
@@ -12,6 +13,7 @@ app.get('/',(req:Request,res:Response)=>{
   });
 });
 
-app.use('/api/auth',authRoute)
+app.use('/api/auth',authRoute);
+app.use('/api/users',userRoute);
 
 export default app;
