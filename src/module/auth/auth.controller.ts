@@ -13,16 +13,29 @@ const createUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(401).json({
       success: true,
-      message: 'failed',
-      error: error
+      message: error.message
     })
   }
 }
 
-// const login = async(req:Request,res:Response) => {
-
-// }
+const loginUser = async (req: Request, res: Response) => {
+  try {
+    console.log(req.body);
+    const result = await authService.loginUserIntoDB(req.body);
+    res.status(200).json({
+      success: true,
+      message: 'User Logged in',
+      data: result
+    })
+  } catch (error: any) {
+    res.status(401).json({
+      success: true,
+      message: error.message
+    })
+  }
+}
 
 export const authController = {
   createUser,
+  loginUser,
 }
