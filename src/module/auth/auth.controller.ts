@@ -19,6 +19,10 @@ const createUser = async (req: Request, res: Response) => {
   }
 }
 
+// const login = async(req:Request,res:Response) => {
+
+// }
+
 export const authController = {
   createUser,
 }

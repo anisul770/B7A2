@@ -11,7 +11,7 @@ const createUserIntoDB = async (payload: IUser) => {
       VALUES ($1,$2,$3,COALESCE($4,'contributor')) 
       RETURNING name,email,role`, [name, email, hashPassword, role]);
   return result;
-};
+};  
 
 export const authService = {
   createUserIntoDB,
