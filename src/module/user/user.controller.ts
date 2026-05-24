@@ -5,12 +5,15 @@ const getAllUser = async (req: Request, res: Response) => {
   try {
     const result = await userService.getAllUsersFromDB();
     res.status(200).json({
-      success : true,
-      message : "Users retrieved successfully",
-      data : result.rows
+      success: true,
+      message: "Users retrieved successfully",
+      data: result.rows
     })
   } catch (error: any) {
-    console.log(error.message);
+    res.status(401).json({
+      success: true,
+      message: error.message
+    })
   }
 };
 

@@ -6,4 +6,5 @@ const router = Router();
 
 router.post('/',auth(),issueController.createIssue);
 
+
 export const issueRoute = router;
