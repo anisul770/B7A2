@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { issueService } from "./issue.service";
 import type { IIssue } from "./issue.interface";
+import type { JwtPayload } from "jsonwebtoken";
 
 const createIssue = async (req: Request, res: Response) => {
   try {
@@ -32,7 +33,7 @@ const getAllIssue = async (req: Request, res: Response) => {
       data: result.rows
     })
   } catch (error: any) {
-    res.status(401).json({
+    res.status(400).json({
       success: false,
       message: error.message
     })
@@ -43,10 +44,28 @@ const getSingleIssue = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const result = await issueService.getSingleIssueFromDB(Number(id));
+    
     res.status(200).json({
-      success : true,
-      message : "Issue retrieved successfully",
-      data : result.rows[0]
+      success: true,
+      message: "Issue retrieved successfully",
+      data: result.rows[0]
+    })
+  } catch (error: any) {
+    res.status(404).json({
+      success: false,
+      message: error.message
+    })
+  }
+};
+
+const updateIssue = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const result = await issueService.updateIssueIntoDB(Number(id), req.body);
+    res.status(200).json({
+      success: true,
+      message: "Issue updated successfully",
+      data: result.rows[0]
     })
   } catch (error: any) {
     res.status(401).json({
@@ -56,8 +75,34 @@ const getSingleIssue = async (req: Request, res: Response) => {
   }
 }
 
+const deleteIssue = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    const { id } = req.params;
+    const result = await issueService.deleteIssueFromDB(user as JwtPayload, id as string);
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Issue Not Found",
+      });
+    }
+    res.status(204).json({
+      success: true,
+      message: "Issue deleted successfully",
+      data: result.rows[0],
+    });
+  } catch (error:any) {
+    res.status(403).json({
+      success: false,
+      message: error.message,
+    })
+  }
+}
+
 export const issueController = {
   createIssue,
   getAllIssue,
-  getSingleIssue
+  getSingleIssue,
+  updateIssue,
+  deleteIssue
 }

@@ -11,7 +11,7 @@ const createUser = async (req: Request, res: Response) => {
       data: result.rows[0]
     })
   } catch (error: any) {
-    res.status(401).json({
+    res.status(400).json({
       success: true,
       message: error.message
     })
@@ -20,7 +20,6 @@ const createUser = async (req: Request, res: Response) => {
 
 const loginUser = async (req: Request, res: Response) => {
   try {
-    console.log(req.body);
     const result = await authService.loginUserIntoDB(req.body);
     const data = {
       token : result.accessToken,

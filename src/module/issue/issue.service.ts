@@ -1,3 +1,4 @@
+import type { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../db"
 import type { IIssue } from "./issue.interface";
 
@@ -22,41 +23,67 @@ const getAllIssuesFromDB = async (sort: string, type: string, status: string) =>
     SELECT * FROM issues
     ORDER BY ${query} ${order};
     `)
-  } else if(type && !status){
+  } else if (type && !status) {
     return await pool.query(`
     SELECT * FROM issues
     WHERE type = $1
     ORDER BY ${query} ${order};
-    `,[type]);
-  }else if(!type && status){
+    `, [type]);
+  } else if (!type && status) {
     return await pool.query(`
     SELECT * FROM issues
     WHERE status = $1
     ORDER BY ${query} ${order};
-    `,[status]);
-  }else{
+    `, [status]);
+  } else {
     return await pool.query(`
     SELECT * FROM issues
     WHERE type=$1
     AND status = $2
     ORDER BY ${query} ${order};
-    `,[type,status]);
+    `, [type, status]);
   }
 }
 
-const getSingleIssueFromDB = async(id:number) => {
+const getSingleIssueFromDB = async (id: number) => {
   const result = await pool.query(`
     SELECT * FROM issues
     WHERE id = $1
-    `,[id]);
-  if(result.rowCount===0){
+    `, [id]);
+  if (result.rowCount === 0) {
     throw new Error('Issue not found');
   }
+  return result;
+}
+
+const updateIssueIntoDB = async (id: number, payload: IIssue) => {
+  const { title, description, type, status } = payload;
+  const result = await pool.query(`
+    UPDATE issues
+    SET
+    title = COALESCE($1,title),
+    description = COALESCE($2,description),
+    type = COALESCE($3,type),
+    status = COALESCE($4,status)
+    WHERE id = $5 RETURNING *
+    `, [title, description, type, status, id]);
+  return result;
+};
+
+const deleteIssueFromDB = async (user: JwtPayload, id: string) => {
+  if (user.role !== 'maintainer'){
+    throw new Error('You are not allowed to delete');
+  }
+  const result = await pool.query(`
+    DELETE FROM issues WHERE id=$1
+    `,[id]);
   return result;
 }
 
 export const issueService = {
   createIssueIntoDB,
   getAllIssuesFromDB,
-  getSingleIssueFromDB
+  getSingleIssueFromDB,
+  updateIssueIntoDB,
+  deleteIssueFromDB
 }
