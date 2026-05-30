@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx --watch ./src/server.ts",
-    "build" : "tsc"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +24,7 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.21.0"
+    "pg": "^8.21.0",
+    "vercel": "^54.6.1"
   }
 }
