@@ -13,7 +13,9 @@ app.use(logger());
 app.get('/',(req:Request,res:Response)=>{
   res.status(200).json({
     message:"Welcome to DevPulse",
-    author : "Anisul Haque"
+    author : "Anisul Haque",
+    contributor : "nice@gmail.com   pass:12345",
+    maintainer : "nice2@gmail.com   pass:12345"
   });
 });
 
