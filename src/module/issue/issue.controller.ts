@@ -27,10 +27,11 @@ const getAllIssue = async (req: Request, res: Response) => {
   try {
     const { sort, type, status } = req.query;
     const result = await issueService.getAllIssuesFromDB(sort as string, type as string, status as string);
+    const formattedIssues = await issueService.getAllIssueWithReporterFromDB(result.rows);
     res.status(200).json({
       success: true,
       message: "All The issues are here",
-      data: result.rows
+      data: formattedIssues
     })
   } catch (error: any) {
     res.status(400).json({

@@ -1,6 +1,6 @@
 import type { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../db"
-import type { IIssue } from "./issue.interface";
+import type { IIssue, IResult } from "./issue.interface";
 
 const createIssueIntoDB = async (payload: IIssue) => {
   const { title, description, type, reporter_id } = payload;
@@ -43,16 +43,67 @@ const getAllIssuesFromDB = async (sort: string, type: string, status: string) =>
     ORDER BY ${query} ${order};
     `, [type, status]);
   }
+
 }
 
+const getAllIssueWithReporterFromDB = async (issues: IResult[]) => {
+  const reporterIds = [
+    ...new Set(issues.map(issue => issue.reporter_id))
+  ];
+  
+  const usersResult = await pool.query(`
+    SELECT id, name, role
+    FROM users
+    WHERE id = ANY($1)
+    `,
+    [reporterIds]);
+
+  const userMap = new Map();
+
+  usersResult.rows.forEach(user => {
+    userMap.set(user.id, user);
+  });
+
+  const formattedIssues = issues.map((issue) => ({
+    id: issue.id,
+    title: issue.title,
+    description: issue.description,
+    type: issue.type,
+    status: issue.status,
+    reporter: userMap.get(issue.reporter_id),
+    created_at: issue.created_at,
+    updated_at: issue.updated_at,
+  }));
+  return formattedIssues;
+};
+
 const getSingleIssueFromDB = async (id: number) => {
-  const result = await pool.query(`
+  let result = await pool.query(`
     SELECT * FROM issues
     WHERE id = $1
     `, [id]);
   if (result.rowCount === 0) {
     throw new Error('Issue not found');
   }
+  const user = await pool.query(`
+    SELECT * FROM users
+    WHERE id = $1;
+    `, [result.rows[0].reporter_id])
+  const new_result = {
+    id: result.rows[0].id,
+    title: result.rows[0].title,
+    description: result.rows[0].description,
+    type: result.rows[0].type,
+    status: result.rows[0].status,
+    reporter: {
+      id: user.rows[0].id,
+      name: user.rows[0].name,
+      role: user.rows[0].role
+    },
+    created_at: result.rows[0].created_at,
+    updated_at: result.rows[0].updated_at
+  }
+  result.rows[0] = new_result;
   return result;
 }
 
@@ -71,12 +122,12 @@ const updateIssueIntoDB = async (id: number, payload: IIssue) => {
 };
 
 const deleteIssueFromDB = async (user: JwtPayload, id: string) => {
-  if (user.role !== 'maintainer'){
+  if (user.role !== 'maintainer') {
     throw new Error('You are not allowed to delete');
   }
   const result = await pool.query(`
     DELETE FROM issues WHERE id=$1
-    `,[id]);
+    `, [id]);
   return result;
 }
 
@@ -85,5 +136,6 @@ export const issueService = {
   getAllIssuesFromDB,
   getSingleIssueFromDB,
   updateIssueIntoDB,
-  deleteIssueFromDB
+  deleteIssueFromDB,
+  getAllIssueWithReporterFromDB
 }
